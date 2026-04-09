@@ -3,11 +3,11 @@
   "version": "5.0.0",
   "private": true,
   "scripts": {
+    "build": "cd legacy && npm install && npm rebuild sqlite3 --build-from-source",
+    "start": "node legacy/server.js",
     "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "cd legacy && npm install"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.0",
