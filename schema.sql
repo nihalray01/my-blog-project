@@ -54,3 +54,11 @@ CREATE TABLE IF NOT EXISTS code_snippets (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
+
+CREATE TABLE IF NOT EXISTS analytics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL,
+    target_id INTEGER NOT NULL,
+    viewer_id TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

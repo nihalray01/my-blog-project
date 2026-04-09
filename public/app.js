@@ -23,12 +23,15 @@ function updateNavUI(isAuthenticated, username = '') {
         navLinks.innerHTML = `
             <a href="index.html">Feed</a>
             <a href="review.html">Reviews</a>
+            <a href="roadmap.html">Roadmap</a>
             <a href="dashboard.html" class="nav-user">@${username}</a>
             <a href="new-post.html" class="btn primary-btn">Write</a>
             <button onclick="logout()" class="btn secondary-btn" style="padding: 0.4rem 0.8rem;">Exit</button>
         `;
     } else {
         navLinks.innerHTML = `
+            <a href="about.html">Mission</a>
+            <a href="roadmap.html">Vision</a>
             <a href="login.html">Login</a>
             <a href="register.html" class="btn primary-btn">Join Now</a>
         `;
@@ -63,6 +66,13 @@ async function fetchPosts() {
                 </div>
             `;
             container.appendChild(el);
+
+            // TRACK POST VIEW
+            fetch('/api/analytics/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'post_view', target_id: post.id })
+            });
         });
     } catch (e) { console.error(e); }
 }

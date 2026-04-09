@@ -388,3 +388,41 @@ a:hover {
 /* Code Review Styles */
 .code-block { background: #011627; padding: 1.5rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; overflow-x: auto; border: 1px solid #1e293b; color: #d6deeb; margin: 1rem 0; }
 
+
+/* Startup Product Layer */
+.site-footer {
+    margin-top: 8rem;
+    padding: 6rem 12%;
+    background: #050505;
+    border-top: 1px solid var(--border);
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 4rem;
+}
+
+.footer-brand .logo { margin-bottom: 1.5rem; display: block; }
+.footer-brand p { color: var(--secondary); max-width: 300px; font-size: 0.9rem; }
+
+.footer-links h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-main); margin-bottom: 1.5rem; }
+.footer-links ul { list-style: none; display: grid; gap: 0.8rem; }
+.footer-links a { color: var(--secondary); font-size: 0.9rem; }
+.footer-links a:hover { color: var(--primary); }
+
+.footer-bottom {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--secondary);
+    font-size: 0.8rem;
+}
+
+/* Social Login Buttons Enhancements */
+.full-width { width: 100%; }
+.nav-user { font-weight: 700; color: var(--accent); }
+

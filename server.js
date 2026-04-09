@@ -2,6 +2,9 @@ const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const GitHubStrategy = require('passport-github2').Strategy;
 const db = require('./db');
 
 const app = express();
@@ -12,15 +15,58 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'dev_secret_key_change_me_in_prod', 
+    secret: process.env.SESSION_SECRET || 'nexus_startup_secret_7712', 
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 } // 24 hours
+    cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 }
+}));
+
+// --- PASSPORT CONFIG --- //
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => done(null, user.id));
+passport.deserializeUser((id, done) => {
+    db.get('SELECT * FROM users WHERE id = ?', [id], (err, user) => done(err, user));
+});
+
+// GitHub Strategy
+passport.use(new GitHubStrategy({
+    clientID: process.env.GITHUB_CLIENT_ID || 'PLACEHOLDER',
+    clientSecret: process.env.GITHUB_CLIENT_SECRET || 'PLACEHOLDER',
+    callbackURL: "/api/auth/github/callback"
+}, (accessToken, refreshToken, profile, done) => {
+    const githubId = `github_${profile.id}`;
+    db.get('SELECT * FROM users WHERE username = ?', [githubId], (err, user) => {
+        if (user) return done(err, user);
+        db.run('INSERT INTO users (username, password_hash, github_username, avatar_url) VALUES (?, ?, ?, ?)',
+            [githubId, 'oauth_user', profile.username, profile.photos[0].value],
+            function(err2) {
+                db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err3, newUser) => done(err3, newUser));
+            });
+    });
+}));
+
+// Google Strategy
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID || 'PLACEHOLDER',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'PLACEHOLDER',
+    callbackURL: "/api/auth/google/callback"
+}, (accessToken, refreshToken, profile, done) => {
+    const googleId = `google_${profile.id}`;
+    db.get('SELECT * FROM users WHERE username = ?', [googleId], (err, user) => {
+        if (user) return done(err, user);
+        db.run('INSERT INTO users (username, password_hash, avatar_url) VALUES (?, ?, ?)',
+            [googleId, 'oauth_user', profile.photos[0].value],
+            function(err2) {
+                db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err3, newUser) => done(err3, newUser));
+            });
+    });
 }));
 
 // Route protection middleware
 const requireAuth = (req, res, next) => {
-    if (req.session.userId) {
+    if (req.session.userId || req.isAuthenticated()) {
         next();
     } else {
         res.status(401).json({ error: 'Unauthorized: Please log in' });
@@ -35,69 +81,67 @@ const requireAdmin = (req, res, next) => {
     }
 };
 
-// --- API ROUTES --- //
+// --- AUTH ROUTES --- //
 
-// Check Auth Status
+// Redirect to Google
+app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+app.get('/api/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/login.html' }),
+    (req, res) => res.redirect('/dashboard.html')
+);
+
+// Redirect to GitHub
+app.get('/api/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
+app.get('/api/auth/github/callback', 
+    passport.authenticate('github', { failureRedirect: '/login.html' }),
+    (req, res) => res.redirect('/dashboard.html')
+);
+
+// Check Auth Status (Updated for Passport)
 app.get('/api/auth/status', (req, res) => {
-    if (req.session.userId) {
-        res.json({ authenticated: true, username: req.session.username });
+    const user = req.user || (req.session.userId ? { username: req.session.username, id: req.session.userId } : null);
+    if (user) {
+        res.json({ authenticated: true, username: user.username, id: user.id });
     } else {
         res.json({ authenticated: false });
     }
 });
 
-// Register
-app.post('/api/register', async (req, res) => {
-    const { username, password, security_question, security_answer } = req.body;
-
-    if (!username || !password || !security_question || !security_answer) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    try {
-        const hash = await bcrypt.hash(password, 10);
-        db.run('INSERT INTO users (username, password_hash, security_question, security_answer) VALUES (?, ?, ?, ?)',
-            [username, hash, security_question, security_answer.toLowerCase().trim()],
-            function (err) {
-                if (err) {
-                    if (err.message.includes('UNIQUE constraint failed')) {
-                        return res.status(400).json({ error: 'Username already exists' });
-                    }
-                    return res.status(500).json({ error: 'Internal server error' });
-                }
-                res.status(201).json({ message: 'User registered successfully!', userId: this.lastID });
-            });
-    } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Login
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Username and password are required' });
-    }
-
-    db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
-        if (err) return res.status(500).json({ error: 'Internal server error' });
-
-        if (!user) return res.status(401).json({ error: 'Invalid username or password' });
-
-        const match = await bcrypt.compare(password, user.password_hash);
-        if (!match) return res.status(401).json({ error: 'Invalid username or password' });
-
-        req.session.userId = user.id;
-        req.session.username = user.username;
-        res.json({ message: 'Logged in successfully', username: user.username });
+// Logout
+app.post('/api/logout', (req, res) => {
+    req.logout((err) => {
+        req.session.destroy();
+        res.json({ message: 'Logged out successfully' });
     });
 });
 
-// Logout
-app.post('/api/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ message: 'Logged out successfully' });
+// --- ANALYTICS ENGINE --- //
+
+// Track a view (Post or Profile)
+app.post('/api/analytics/track', (req, res) => {
+    const { type, target_id } = req.body;
+    const viewer_id = req.sessionID; // Basic session-based tracking
+    db.run('INSERT INTO analytics (type, target_id, viewer_id) VALUES (?, ?, ?)',
+        [type, target_id, viewer_id],
+        (err) => {
+            if (err) return res.status(500).json({ error: 'Tracking failed' });
+            res.json({ success: true });
+        }
+    );
+});
+
+// Get creator analytics
+app.get('/api/analytics/summary', requireAuth, (req, res) => {
+    const userId = req.user ? req.user.id : req.session.userId;
+    const summaryQuery = `
+        SELECT 
+            (SELECT COUNT(*) FROM analytics WHERE type = 'profile_view' AND target_id = ?) as profile_views,
+            (SELECT COUNT(*) FROM analytics a JOIN posts p ON a.target_id = p.id WHERE a.type = 'post_view' AND p.user_id = ?) as post_reach
+    `;
+    db.get(summaryQuery, [userId, userId], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Fetch failed' });
+        res.json(row);
+    });
 });
 
 // Get all posts (with interaction counts)

@@ -43,6 +43,24 @@
             </div>
         </section>
 
+        <section class="analytics-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+            <div class="post-card" style="padding: 1.5rem; text-align: center;">
+                <span class="stat-label">Total Reach</span>
+                <h3 id="analytics-reach" class="stat-value">0</h3>
+                <p style="font-size: 0.7rem; color: var(--secondary);">Post Views</p>
+            </div>
+            <div class="post-card" style="padding: 1.5rem; text-align: center;">
+                <span class="stat-label">Profile Authority</span>
+                <h3 id="analytics-views" class="stat-value">0</h3>
+                <p style="font-size: 0.7rem; color: var(--secondary);">Dashboard Hits</p>
+            </div>
+            <div class="post-card" style="padding: 1.5rem; text-align: center;">
+                <span class="stat-label">Community Rank</span>
+                <h3 class="stat-value">#120</h3>
+                <p style="font-size: 0.7rem; color: var(--secondary);">Weekly Tier</p>
+            </div>
+        </section>
+
         <section class="dashboard-content">
             <div class="tabs">
                 <button class="tab active">My Broadcasts</button>
@@ -102,6 +120,19 @@
                 document.getElementById('github-card').classList.remove('hidden');
                 fetchGitHubStats(user.github_username);
             }
+
+            // Fetch Analytics summary
+            const analyticsRes = await fetch('/api/analytics/summary');
+            const stats = await analyticsRes.json();
+            document.getElementById('analytics-reach').textContent = stats.post_reach;
+            document.getElementById('analytics-views').textContent = stats.profile_views;
+
+            // Track this profile view
+            fetch('/api/analytics/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'profile_view', target_id: user.id })
+            });
         }
 
         async function fetchGitHubStats(username) {

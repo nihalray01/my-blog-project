@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Nexus - Talk to the Builders</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="auth-body">
+    <nav class="navbar">
+        <div class="logo">Nexus<span>Blog</span></div>
+        <div class="nav-links">
+            <a href="index.html">Feed</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="auth-wrapper" style="max-width: 600px; margin: 4rem auto;">
+            <div class="auth-card">
+                <h1>Contact & <span>Feedback</span></h1>
+                <p style="color: var(--secondary); margin-bottom: 2rem;">Have a suggestion, bug report, or partnership idea? Our team monitors every broadcast.</p>
+                
+                <form id="feedback-form">
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <select id="feedback-type" class="form-group input" style="background: var(--bg); color: white; width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem;">
+                            <option value="feature">Feature Request</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="partner">Partnership</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea id="feedback-message" style="min-height: 150px; background: var(--bg); color: white; border: 1px solid var(--border); border-radius: 6px; width: 100%; padding: 1rem;" placeholder="Deep dive into your thoughts..."></textarea>
+                    </div>
+                    <button type="submit" class="btn primary-btn" style="width: 100%;">Transmit Feedback</button>
+                </form>
+            </div>
+
+            <div style="margin-top: 3rem; display: flex; flex-direction: column; gap: 1rem; align-items: center; color: var(--secondary);">
+                <p>Email: <span style="color: var(--text-main);">support@nexus.inc</span></p>
+                <p>Twitter: <span style="color: var(--text-main);">@nexus_narrative</span></p>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+        document.getElementById('feedback-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Feedback Transmitted! Our architects will review this shortly.');
+            location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
