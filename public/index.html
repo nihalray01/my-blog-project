@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Blog Feed</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Nexus<span>Blog</span></div>
+        <div class="nav-links" id="nav-links">
+            <!-- Dynamically populated based on auth -->
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="feed-header">
+            <h1>Latest Stories</h1>
+            <p>Discover ideas, insights, and stories from our community.</p>
+        </header>
+
+        <section id="posts-container" class="posts-grid">
+            <!-- Posts will be injected here via JS -->
+            <div class="loading-spinner"></div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchPosts();
+        });
+    </script>
+</body>
+</html>

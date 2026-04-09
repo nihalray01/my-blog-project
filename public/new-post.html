@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Post - NexusBlog</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><a href="index.html" style="text-decoration:none; color:inherit;">Nexus<span>Blog</span></a></div>
+        <div class="nav-links" id="nav-links">
+            <a href="index.html" class="nav-btn">Cancel</a>
+        </div>
+    </nav>
+
+    <main class="container publish-container">
+        <div class="publish-card form-group">
+            <h2>Draft your post</h2>
+            <form id="new-post-form">
+                <input type="text" id="post-title" class="title-input" placeholder="An engaging title..." required autocomplete="off">
+                <textarea id="post-content" class="content-input" placeholder="Tell your story..." required></textarea>
+                <div class="publish-actions">
+                    <button type="submit" class="btn primary-btn">Publish Post</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check auth before letting them stay on the page
+            checkAuthStatus().then(isAuthenticated => {
+                if (!isAuthenticated) {
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

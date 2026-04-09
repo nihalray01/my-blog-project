@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - NexusBlog</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body class="auth-body">
+    <div class="auth-wrapper">
+        <div class="auth-card glassmorphism">
+            <div class="logo center-logo">Nexus<span>Blog</span></div>
+            <h2>Create Account</h2>
+            <p class="auth-subtitle">Join our community today</p>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="reg-username">Username</label>
+                    <input type="text" id="reg-username" name="username" required placeholder="Choose a username">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" name="password" required placeholder="Choose a password">
+                </div>
+                <div class="form-group">
+                    <label for="security-question">Security Question</label>
+                    <select id="security-question" name="security_question" required style="width: 100%; padding: 0.8rem 1rem; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: white;">
+                        <option value="" disabled selected>Select a recovery question</option>
+                        <option value="What was your first pet's name?">What was your first pet's name?</option>
+                        <option value="In what city were you born?">In what city were you born?</option>
+                        <option value="What is your favorite book?">What is your favorite book?</option>
+                        <option value="What was the model of your first car?">What was the model of your first car?</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="security-answer">Security Answer</label>
+                    <input type="text" id="security-answer" name="security_answer" required placeholder="Your secret answer">
+                </div>
+                <button type="submit" class="btn primary-btn full-width">Sign Up</button>
+            </form>
+            <p class="auth-footer">Already have an account? <a href="login.html">Sign in</a></p>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>

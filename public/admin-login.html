@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | NexusBlog</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body class="auth-body">
+    <div class="auth-wrapper">
+        <div class="auth-card glassmorphism">
+            <div class="center-logo logo">Nexus<span>Blog</span> <span class="admin-badge" style="background: var(--accent); color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem;">ADMIN</span></div>
+            <p class="auth-subtitle" style="color: var(--accent); font-weight: 600;">Restricted Access Login</p>
+            
+            <form id="admin-login-form">
+                <div class="form-group">
+                    <label for="username">Admin ID</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Passcode</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn primary-btn full-width">Unlock Dashboard</button>
+            </form>
+            <p class="auth-footer"><a href="index.html">← Back to main site</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    window.location.href = 'admin.html';
+                } else {
+                    const errorData = await res.json();
+                    alert(errorData.error || 'Login failed');
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        });
+    </script>
+</body>
+</html>

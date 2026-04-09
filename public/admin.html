@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | NexusBlog</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+        .stat-card h3 {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .data-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .hash-text {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            word-break: break-all;
+        }
+        .admin-badge {
+            background: var(--accent);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .delete-btn:hover {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Nexus<span>Blog</span> <span class="admin-badge">ADMIN</span></div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn">Back to Main Feed</a>
+            <button onclick="logoutAdmin()" class="btn secondary-btn" style="padding: 0.4rem 1rem; margin-left: 1rem;">Admin Logout</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="admin-header">
+            <div>
+                <h1 style="font-size: 2.5rem;">Admin Control Panel</h1>
+                <p style="color: var(--text-muted);">Monitor and oversee all platform data</p>
+            </div>
+            <button class="btn secondary-btn" onclick="fetchAdminData()">Refresh Data</button>
+        </div>
+
+        <div class="stats-grid" id="stats-container">
+            <div class="stat-card">
+                <h3>Total Registered Users</h3>
+                <div class="value" id="stat-users">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Blog Posts</h3>
+                <div class="value" id="stat-posts">-</div>
+            </div>
+        </div>
+
+        <h2 style="margin-bottom: 1rem;">Registered Users Database</h2>
+        <div class="data-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Created At</th>
+                        <th>Password Hash (Encrypted)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <tr><td colspan="5" style="text-align: center;">Loading users...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 style="margin-top: 3rem; margin-bottom: 1rem;">Platform Blog Posts</h2>
+        <div class="data-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Author</th>
+                        <th>Title</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="posts-table-body">
+                    <tr><td colspan="5" style="text-align: center;">Loading posts...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="admin.js"></script>
+</body>
+</html>
