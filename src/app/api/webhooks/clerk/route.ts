@@ -51,27 +51,39 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   if (eventType === "user.created") {
-    await db.profile.create({
-      data: {
-        userId: payload.data.id,
-        username: payload.data.username || `user_${payload.data.id.slice(0, 5)}`,
-        email: payload.data.email_addresses[0].email_address,
-        imageUrl: payload.data.image_url,
-      }
-    });
+    try {
+      await db.profile.create({
+        data: {
+          userId: payload.data.id,
+          username: payload.data.username || `user_${payload.data.id.slice(0, 5)}`,
+          email: payload.data.email_addresses[0].email_address,
+          imageUrl: payload.data.image_url,
+        }
+      });
+      console.log(`Profile created for user ${payload.data.id}`);
+    } catch (dbError) {
+      console.error("WEBHOOK ERROR: Failed to create profile in DB. Check your DATABASE_URL in .env");
+      console.error(dbError);
+      // We return 200 anyway so Clerk doesn't block the signup, 
+      // but the user won't have a profile yet.
+    }
   }
 
   if (eventType === "user.updated") {
-    await db.profile.update({
-      where: {
-        userId: payload.data.id,
-      },
-      data: {
-        username: payload.data.username || `user_${payload.data.id.slice(0, 5)}`,
-        email: payload.data.email_addresses[0].email_address,
-        imageUrl: payload.data.image_url,
-      }
-    });
+    try {
+      await db.profile.update({
+        where: {
+          userId: payload.data.id,
+        },
+        data: {
+          username: payload.data.username || `user_${payload.data.id.slice(0, 5)}`,
+          email: payload.data.email_addresses[0].email_address,
+          imageUrl: payload.data.image_url,
+        }
+      });
+    } catch (dbError) {
+      console.error("WEBHOOK ERROR: Failed to update profile in DB.");
+    }
   }
 
   return new Response('', { status: 200 });
