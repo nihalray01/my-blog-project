@@ -310,3 +310,81 @@ a:hover {
     to { transform: rotate(360deg); } 
 }
 
+
+/* Dashboard & Social Styles */
+.profile-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: flex-start;
+    padding: 3rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 3rem;
+}
+
+.profile-main {
+    display: flex;
+    gap: 2rem;
+    flex-grow: 1;
+}
+
+.avatar-lg {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--border);
+}
+
+.profile-info h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.bio { color: var(--secondary); margin-bottom: 1.5rem; max-width: 500px; }
+
+.profile-stats { display: flex; gap: 2rem; }
+.profile-stats .stat { font-weight: 600; color: var(--text-main); }
+
+.github-card {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 300px;
+}
+
+.gh-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; color: #8b949e; font-size: 0.8rem; font-weight: 600; }
+.gh-stats { display: grid; gap: 10px; }
+.gh-stats .stat { display: flex; justify-content: space-between; font-size: 0.9rem; color: #c9d1d9; }
+
+/* Tabs */
+.tabs { display: flex; gap: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+.tab { background: none; border: none; color: var(--secondary); padding: 1rem 0; cursor: pointer; font-weight: 600; position: relative; }
+.tab.active { color: var(--text-main); }
+.tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--accent); }
+
+/* Sidebar Layout */
+.main-layout { display: grid; grid-template-columns: 1fr 340px; gap: 3rem; }
+
+/* Trending Sidebar */
+.trending-sidebar { position: sticky; top: 100px; }
+.sidebar-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+.sidebar-section h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--secondary); margin-bottom: 1.5rem; }
+
+.trending-list { display: grid; gap: 1.5rem; }
+.trending-item { display: flex; gap: 1rem; align-items: center; }
+.trending-item .rank { font-size: 1.5rem; font-weight: 800; color: var(--border); }
+.trending-item .title { font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
+.trending-item .meta { font-size: 0.8rem; color: var(--secondary); }
+
+/* Modals */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+.modal-content { max-width: 500px; }
+.hidden { display: none !important; }
+
+/* Code Review Styles */
+.code-block { background: #011627; padding: 1.5rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; overflow-x: auto; border: 1px solid #1e293b; color: #d6deeb; margin: 1rem 0; }
+

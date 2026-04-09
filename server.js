@@ -100,16 +100,52 @@ app.post('/api/logout', (req, res) => {
     res.json({ message: 'Logged out successfully' });
 });
 
-// Get all posts
+// Get all posts (with interaction counts)
 app.get('/api/posts', (req, res) => {
     const query = `
-        SELECT p.id, p.title, p.content, p.created_at, u.username 
+        SELECT p.*, u.username, u.avatar_url,
+        (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as likes,
+        (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comments
         FROM posts p
         JOIN users u ON p.user_id = u.id
         ORDER BY p.created_at DESC
     `;
     db.all(query, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: 'Failed to fetch posts' });
+        if (err) return res.status(500).json({ error: 'Failed' });
+        res.json(rows);
+    });
+});
+
+// --- TRENDING & DISCOVERY --- //
+
+// Weekly Hot Broadcasts
+app.get('/api/trending/posts', (req, res) => {
+    const query = `
+        SELECT p.id, p.title, u.username,
+        ((SELECT COUNT(*) FROM likes WHERE post_id = p.id) * 2 + 
+         (SELECT COUNT(*) FROM comments WHERE post_id = p.id) * 5) as score
+        FROM posts p
+        JOIN users u ON p.user_id = u.id
+        WHERE p.created_at >= date('now', '-7 days')
+        ORDER BY score DESC LIMIT 5
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Trending fetch failed' });
+        res.json(rows);
+    });
+});
+
+// Top Developers
+app.get('/api/trending/developers', (req, res) => {
+    const query = `
+        SELECT u.id, u.username, u.avatar_url,
+        ((SELECT COUNT(*) FROM follows WHERE following_id = u.id) * 10 +
+         (SELECT COUNT(*) FROM posts WHERE user_id = u.id) * 5) as reputation
+        FROM users u
+        ORDER BY reputation DESC LIMIT 5
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Top devs fetch failed' });
         res.json(rows);
     });
 });
@@ -129,6 +165,117 @@ app.post('/api/posts', requireAuth, (req, res) => {
             res.status(201).json({ message: 'Post created successfully', postId: this.lastID });
         }
     );
+});
+
+// --- SOCIAL & PROFILE ROUTES --- //
+
+// Get public profile
+app.get('/api/users/:username', (req, res) => {
+    const query = `
+        SELECT username, bio, github_username, avatar_url, created_at,
+        (SELECT COUNT(*) FROM follows WHERE following_id = users.id) as followers,
+        (SELECT COUNT(*) FROM follows WHERE follower_id = users.id) as following
+        FROM users WHERE username = ?
+    `;
+    db.get(query, [req.params.username], (err, user) => {
+        if (err || !user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
+    });
+});
+
+// Update Profile (including GitHub fetch)
+app.put('/api/profile', requireAuth, (req, res) => {
+    const { bio, github_username, avatar_url } = req.body;
+    db.run('UPDATE users SET bio = ?, github_username = ?, avatar_url = ? WHERE id = ?',
+        [bio, github_username, avatar_url, req.session.userId],
+        (err) => {
+            if (err) return res.status(500).json({ error: 'Update failed' });
+            res.json({ message: 'Profile updated' });
+        }
+    );
+});
+
+// Like/Unlike a post
+app.post('/api/posts/:id/like', requireAuth, (req, res) => {
+    const postId = req.params.id;
+    const userId = req.session.userId;
+
+    // Toggle logic: try to insert, if fails (already exists), delete
+    db.run('INSERT INTO likes (user_id, post_id) VALUES (?, ?)', [userId, postId], function(err) {
+        if (err) {
+            db.run('DELETE FROM likes WHERE user_id = ? AND post_id = ?', [userId, postId], (err2) => {
+                if (err2) return res.status(500).json({ error: 'Toggle like failed' });
+                res.json({ liked: false });
+            });
+        } else {
+            res.json({ liked: true });
+        }
+    });
+});
+
+// Follow/Unfollow a user
+app.post('/api/users/:targetId/follow', requireAuth, (req, res) => {
+    const targetId = req.params.targetId;
+    const userId = req.session.userId;
+
+    if (targetId == userId) return res.status(400).json({ error: 'Cannot follow yourself' });
+
+    db.run('INSERT INTO follows (follower_id, following_id) VALUES (?, ?)', [userId, targetId], function(err) {
+        if (err) {
+            db.run('DELETE FROM follows WHERE follower_id = ? AND following_id = ?', [userId, targetId], (err2) => {
+                res.json({ following: false });
+            });
+        } else {
+            res.json({ following: true });
+        }
+    });
+});
+
+// Add a comment
+app.post('/api/posts/:id/comments', requireAuth, (req, res) => {
+    const { content } = req.body;
+    db.run('INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)',
+        [req.params.id, req.session.userId, content],
+        function(err) {
+            if (err) return res.status(500).json({ error: 'Comment failed' });
+            res.status(201).json({ message: 'Comment added' });
+        }
+    );
+});
+
+// Get comments for a post
+app.get('/api/posts/:id/comments', (req, res) => {
+    const query = `
+        SELECT c.*, u.username, u.avatar_url 
+        FROM comments c 
+        JOIN users u ON c.user_id = u.id 
+        WHERE c.post_id = ? 
+        ORDER BY c.created_at ASC
+    `;
+    db.all(query, [req.params.id], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Fetch failed' });
+        res.json(rows);
+    });
+});
+
+// --- CODE REVIEW ROUTES --- //
+
+app.post('/api/snippets', requireAuth, (req, res) => {
+    const { title, code, language } = req.body;
+    db.run('INSERT INTO code_snippets (user_id, title, code, language) VALUES (?, ?, ?, ?)',
+        [req.session.userId, title, code, language],
+        function(err) {
+            if (err) return res.status(500).json({ error: 'Snippet upload failed' });
+            res.status(201).json({ message: 'Snippet uploaded', id: this.lastID });
+        }
+    );
+});
+
+app.get('/api/snippets', (req, res) => {
+    db.all('SELECT s.*, u.username FROM code_snippets s JOIN users u ON s.user_id = u.id ORDER BY s.created_at DESC', 
+    [], (err, rows) => {
+        res.json(rows);
+    });
 });
 // --- FORGOT PASSWORD ROUTES --- //
 

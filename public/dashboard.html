@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - NexusBlog</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Nexus<span>Blog</span></div>
+        <div class="nav-links" id="nav-links">
+            <a href="index.html">Feed</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="profile-header">
+            <div class="profile-main">
+                <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Nexus" alt="Avatar" class="avatar-lg">
+                <div class="profile-info">
+                    <h1 id="user-display-name">Loading...</h1>
+                    <p id="user-bio" class="bio">No bio set yet.</p>
+                    <div class="profile-stats">
+                        <div class="stat"><span id="follower-count">0</span> Followers</div>
+                        <div class="stat"><span id="following-count">0</span> Following</div>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button onclick="openEditModal()" class="btn secondary-btn">Edit Profile</button>
+                </div>
+            </div>
+
+            <div id="github-card" class="github-card hidden">
+                <div class="gh-header">
+                    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" width="20">
+                    <span>GitHub Activity</span>
+                </div>
+                <div id="github-stats" class="gh-stats">
+                    <!-- GitHub info injected here -->
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-content">
+            <div class="tabs">
+                <button class="tab active">My Broadcasts</button>
+                <button class="tab">Saved</button>
+                <button class="tab" onclick="location.href='new-post.html'">+ New Post</button>
+            </div>
+            
+            <div id="my-posts" class="posts-grid">
+                <div class="loading-spinner"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="auth-card modal-content">
+            <h2>Update Profile</h2>
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea id="edit-bio" class="content-input" placeholder="Tell the world about yourself..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>GitHub Username</label>
+                    <input type="text" id="edit-github" placeholder="e.g., torvalds">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="closeEditModal()" class="btn secondary-btn">Cancel</button>
+                    <button type="submit" class="btn primary-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = await checkAuth();
+            if (!auth.authenticated) {
+                location.href = 'login.html';
+                return;
+            }
+            loadProfile(auth.username);
+        });
+
+        async function loadProfile(username) {
+            const res = await fetch(`/api/users/${username}`);
+            const user = await res.json();
+            
+            document.getElementById('user-display-name').textContent = user.username;
+            document.getElementById('user-bio').textContent = user.bio || 'No bio yet.';
+            document.getElementById('follower-count').textContent = user.followers;
+            document.getElementById('following-count').textContent = user.following;
+            if (user.avatar_url) document.getElementById('user-avatar').src = user.avatar_url;
+
+            if (user.github_username) {
+                document.getElementById('github-card').classList.remove('hidden');
+                fetchGitHubStats(user.github_username);
+            }
+        }
+
+        async function fetchGitHubStats(username) {
+            try {
+                const res = await fetch(`https://api.github.com/users/${username}`);
+                const data = await res.json();
+                document.getElementById('github-stats').innerHTML = `
+                    <div class="stat"><strong>${data.public_repos}</strong> Repos</div>
+                    <div class="stat"><strong>${data.followers}</strong> GH Followers</div>
+                    <div class="stat"><strong>${data.following}</strong> GH Following</div>
+                `;
+            } catch (e) {
+                console.error('GH Fetch failed', e);
+            }
+        }
+
+        function openEditModal() { document.getElementById('edit-modal').classList.remove('hidden'); }
+        function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
+
+        document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bio = document.getElementById('edit-bio').value;
+            const github_username = document.getElementById('edit-github').value;
+            
+            // Auto fetch avatar from GH if username provided
+            let avatar_url = null;
+            if (github_username) {
+                avatar_url = `https://github.com/${github_username}.png`;
+            }
+
+            const res = await fetch('/api/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bio, github_username, avatar_url })
+            });
+
+            if (res.ok) location.reload();
+        });
+    </script>
+</body>
+</html>
