@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: nexus-blogpost
+    runtime: node
+    rootDir: legacy
+    buildCommand: npm install && npm rebuild sqlite3 --build-from-source
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        value: nexus_startup_secret_7712
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
