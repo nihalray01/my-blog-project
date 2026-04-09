@@ -83,6 +83,57 @@ const requireAdmin = (req, res, next) => {
 
 // --- AUTH ROUTES --- //
 
+// ✅ REGISTER — create a new user account
+app.post('/api/register', async (req, res) => {
+    const { username, password, security_question, security_answer } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    // Check if user already exists
+    db.get('SELECT id FROM users WHERE username = ?', [username], async (err, existing) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (existing) return res.status(409).json({ error: 'Username already taken' });
+
+        try {
+            const password_hash = await bcrypt.hash(password, 10);
+            const answer = security_answer ? security_answer.toLowerCase().trim() : null;
+
+            db.run(
+                'INSERT INTO users (username, password_hash, security_question, security_answer) VALUES (?, ?, ?, ?)',
+                [username, password_hash, security_question || null, answer],
+                function (err) {
+                    if (err) return res.status(500).json({ error: 'Registration failed' });
+                    res.status(201).json({ message: 'Account created successfully' });
+                }
+            );
+        } catch (hashErr) {
+            res.status(500).json({ error: 'Server error during registration' });
+        }
+    });
+});
+
+// ✅ LOGIN — authenticate with username + password
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
+        if (err || !user) return res.status(401).json({ error: 'Invalid credentials' });
+
+        const isValid = await bcrypt.compare(password, user.password_hash);
+        if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
+
+        req.session.userId = user.id;
+        req.session.username = user.username;
+        res.json({ message: 'Logged in successfully', username: user.username });
+    });
+});
+
 // Redirect to Google
 app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 app.get('/api/auth/google/callback', 
