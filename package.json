@@ -4,7 +4,7 @@
   "description": "Nexus - Developer Broadcast Platform",
   "main": "legacy/server.js",
   "scripts": {
-    "build": "npm rebuild sqlite3 --build-from-source",
+    "build": "npm install && npm rebuild sqlite3 --build-from-source",
     "start": "node legacy/server.js",
     "dev": "node legacy/server.js"
   },
