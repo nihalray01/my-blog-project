@@ -157,13 +157,23 @@ if (registerForm) {
         e.preventDefault();
         const formData = new FormData(registerForm);
         const data = Object.fromEntries(formData.entries());
-        const res = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        if (res.ok) window.location.href = 'login.html';
-        else alert('Registration failed');
+        
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            
+            if (res.ok) {
+                window.location.href = 'login.html';
+            } else {
+                alert(result.error || 'Registration failed');
+            }
+        } catch (err) {
+            alert('Connection failed. Please try again.');
+        }
     });
 }
 
