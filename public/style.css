@@ -369,3 +369,94 @@ td:first-child, th:first-child { border-radius: 12px 0 0 12px; }
 td:last-child, th:last-child { border-radius: 0 12px 12px 0; }
 .loading-spinner { width: 44px; height: 44px; border: 3px solid rgba(255,155,255,0.05); border-radius: 50%; border-top-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); animation: spin 1s linear infinite; margin: 4rem auto; grid-column: 1 / -1; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Community Stats Section */
+.stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    animation: fadeInUp 1s ease 0.2s backwards;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary);
+    text-shadow: 0 0 10px var(--primary-glow);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 0.2rem;
+}
+
+/* Animated Demo Preview */
+.demo-preview {
+    margin: 4rem auto 0;
+    max-width: 600px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+    animation: fadeInUp 1s ease 0.4s backwards;
+    backdrop-filter: blur(10px);
+}
+
+.demo-window {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 15px;
+    display: flex;
+    gap: 6px;
+}
+
+.demo-dot-red, .demo-dot-yellow, .demo-dot-green {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.demo-dot-red { background: #ff5f56; }
+.demo-dot-yellow { background: #ffbd2e; }
+.demo-dot-green { background: #27c93f; }
+
+.demo-content-placeholder {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.demo-line {
+    height: 10px;
+    background: linear-gradient(90deg, var(--glass-border), transparent);
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.demo-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--primary-glow), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    100% { left: 100%; }
+}
+
